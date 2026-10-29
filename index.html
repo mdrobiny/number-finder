@@ -283,6 +283,36 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .hidden { display: none !important; }
+
+    .export-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+    }
+    .export-row .btn {
+      min-height: 40px; font-size: 0.85rem; padding: 0 12px; flex: 1 1 auto;
+    }
+    .btn-buy {
+      min-width: 42px; height: 42px; padding: 0 10px; width: auto;
+      border-radius: 12px; border: 1px solid color-mix(in srgb, var(--ok) 40%, var(--border));
+      background: color-mix(in srgb, var(--ok) 12%, var(--bg2));
+      color: var(--ok); cursor: pointer; font-size: 0.72rem; font-weight: 800;
+      font-family: inherit; display: grid; place-items: center; white-space: nowrap;
+    }
+    .live-found {
+      margin-top: 8px; font-size: 0.88rem; font-weight: 700; color: var(--ok);
+      font-variant-numeric: tabular-nums;
+    }
+    .result-list {
+      max-height: min(70vh, 900px); overflow-y: auto;
+      content-visibility: auto;
+    }
+    .progress-bar.indeterminate > i {
+      width: 40% !important;
+      animation: nf-indeterminate 1.2s ease-in-out infinite;
+    }
+    @keyframes nf-indeterminate {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(280%); }
+    }
     @media (min-width: 420px) {
       .modes { grid-template-columns: 1fr 1fr 1fr; }
     }
@@ -373,13 +403,14 @@
       </div>
 
       <div class="field">
-        <label for="maxCheck">সর্বোচ্চ কতগুলো চেক করবে</label>
-        <select id="maxCheck">
-          <option value="50">৫০</option>
-          <option value="100" selected>১০০</option>
+        <label for="resultLimit">সর্বোচ্চ কতগুলো ফলাফল</label>
+        <select id="resultLimit">
+          <option value="100">১০০</option>
           <option value="200">২০০</option>
-          <option value="500">৫০০</option>
+          <option value="500" selected>৫০০</option>
+          <option value="unlimited">আনলিমিটেড</option>
         </select>
+        <div class="hint">সার্চ ফলাফল পাওয়ার পর থামবে; আনলিমিটেডে নতুন নাম্বার না এলে নিজে থেকে থামবে</div>
       </div>
     </section>
 
@@ -395,6 +426,7 @@
           <div class="stat ok"><b id="foundCount">০</b><span>পাওয়া গেছে</span></div>
           <div class="stat"><b id="statusText">প্রস্তুত</b><span>স্ট্যাটাস</span></div>
         </div>
+        <div class="live-found" id="liveFound">পাওয়া গেছে: ০</div>
       </div>
     </section>
 
@@ -411,6 +443,10 @@
       </div>
       <div id="favsList" class="result-list hidden">
         <div class="empty">পছন্দের তালিকা খালি। ⭐ চাপুন।</div>
+      </div>
+      <div class="export-row" id="exportRow">
+        <button class="btn btn-ghost" type="button" id="copyAllBtn">📋 সব কপি</button>
+        <button class="btn btn-ghost" type="button" id="csvBtn">⬇️ CSV ডাউনলোড</button>
       </div>
     </section>
 
@@ -811,12 +847,30 @@
     const found = []; // {msisdn, brand, score}
     const foundSet = new Set();
 
+    const BUY_URL = {
+      ROBI: 'https://www.robi.com.bd/bn/sim-services?requestType=NEW',
+      AIRTEL: 'https://cirkle.digital/bn/sim-services?requestType=NEW'
+    };
+
+    async function buyNumber(item) {
+      const local = localDisplay(item.msisdn);
+      try {
+        await navigator.clipboard.writeText(local);
+        toast('নম্বর কপি হয়েছে, অফিসিয়াল পেজে পেস্ট করুন');
+      } catch {
+        toast('কপি করা যায়নি — নম্বরটি মনে রাখুন: ' + toBn(local));
+      }
+      const url = BUY_URL[item.brand] || BUY_URL.ROBI;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
     function renderResultCard(item, withFavBtn = true) {
       const brand = item.brand === 'ROBI' ? 'robi' : 'airtel';
       const brandLabel = item.brand === 'ROBI' ? 'রবি ০১৮' : 'এয়ারটেল ০১৬';
       const favOn = isFav(item.msisdn) ? 'on' : '';
       const el = document.createElement('div');
       el.className = 'result';
+      el.dataset.msisdn = item.msisdn;
       el.innerHTML = `
         <div>
           <div class="num">${toBn(formatNice(item.msisdn))}</div>
@@ -826,6 +880,7 @@
           </div>
         </div>
         <div class="result-actions">
+          <button class="btn-buy" type="button" title="অফিসিয়াল সাইটে কিনুন" data-buy="${item.msisdn}">কিনুন</button>
           <button class="mini-btn" type="button" title="কপি" data-copy="${item.msisdn}">📋</button>
           ${withFavBtn ? `<button class="mini-btn fav ${favOn}" type="button" title="পছন্দ" data-fav="${item.msisdn}">⭐</button>` : ''}
         </div>`;
@@ -838,22 +893,49 @@
           toast('কপি করা যায়নি');
         }
       });
+      el.querySelector('[data-buy]').addEventListener('click', () => buyNumber(item));
       const favBtn = el.querySelector('[data-fav]');
       if (favBtn) favBtn.addEventListener('click', () => toggleFav(item));
       return el;
     }
 
-    function renderFound() {
+    function updateFoundCounters() {
+      const n = found.length;
+      $('foundCount').textContent = toBn(n);
+      const live = $('liveFound');
+      if (live) live.textContent = 'পাওয়া গেছে: ' + toBn(n);
+    }
+
+    function renderFound(full = true) {
       const list = $('resultsList');
       if (!found.length) {
         list.innerHTML = '<div class="empty">এখনো কোনো নাম্বার পাওয়া যায়নি। প্যাটার্ন বেছে খুঁজুন।</div>';
+        updateFoundCounters();
         return;
       }
-      list.innerHTML = '';
-      // sort by beauty score desc
+      if (!full) {
+        updateFoundCounters();
+        return;
+      }
       const sorted = [...found].sort((a, b) => b.score - a.score);
-      sorted.forEach((item) => list.appendChild(renderResultCard(item)));
-      $('foundCount').textContent = toBn(found.length);
+      const frag = document.createDocumentFragment();
+      sorted.forEach((item) => frag.appendChild(renderResultCard(item)));
+      list.innerHTML = '';
+      list.appendChild(frag);
+      updateFoundCounters();
+    }
+
+    function appendFoundCard(item) {
+      const list = $('resultsList');
+      const empty = list.querySelector('.empty');
+      if (empty) empty.remove();
+      // Insert in score order without full rebuild when list is large
+      if (found.length <= 80) {
+        renderFound(true);
+        return;
+      }
+      list.appendChild(renderResultCard(item));
+      updateFoundCounters();
     }
     function renderFavs() {
       const list = $('favsList');
@@ -904,14 +986,22 @@
       const key = msisdn + '|' + brand;
       if (foundSet.has(key)) return false;
       foundSet.add(key);
-      found.push({ msisdn, brand, score: beautyScore(msisdn) });
-      renderFound();
+      const item = { msisdn, brand, score: beautyScore(msisdn) };
+      found.push(item);
+      appendFoundCard(item);
       return true;
     }
 
-    // Search engine with polite concurrency
+    // Search engine with polite concurrency + result limits
     let abortCtrl = null;
     let running = false;
+    const STALE_STOP_K = 10; // unlimited: stop after K consecutive calls with no new finds
+
+    function parseResultLimit() {
+      const v = $('resultLimit').value;
+      if (v === 'unlimited') return Infinity;
+      return Math.max(1, parseInt(v, 10) || 500);
+    }
 
     async function runSearch() {
       const cfg = getConfig();
@@ -933,63 +1023,92 @@
       // reset
       found.length = 0;
       foundSet.clear();
-      renderFound();
+      renderFound(true);
       running = true;
       abortCtrl = new AbortController();
       $('startBtn').disabled = true;
       $('stopBtn').classList.add('show');
       $('statusText').textContent = 'চলছে';
       $('checkedCount').textContent = toBn(0);
-      $('foundCount').textContent = toBn(0);
-      $('progressFill').style.width = '0%';
+      updateFoundCounters();
+      const progressEl = $('progressFill');
+      const progressBar = progressEl.parentElement;
+      progressEl.style.width = '0%';
 
-      const maxCheck = +$('maxCheck').value;
+      const resultLimit = parseResultLimit();
+      const unlimited = !Number.isFinite(resultLimit);
+      progressBar.classList.toggle('indeterminate', unlimited);
       const prefixes = prefixesForOp(currentOp());
       const gen = candidates(cfg);
-      const queue = [];
       const CONCURRENCY = 2;
       const DELAY_MS = 280;
       let checked = 0;
       let stopped = false;
+      let stopReason = ''; // user | limit | stale | exhausted
+      let staleCalls = 0;
+      let genDone = false;
+
+      const shouldStop = () => {
+        if (stopped) return true;
+        if (found.length >= resultLimit) {
+          stopped = true;
+          stopReason = 'limit';
+          return true;
+        }
+        if (unlimited && staleCalls >= STALE_STOP_K) {
+          stopped = true;
+          stopReason = 'stale';
+          return true;
+        }
+        return false;
+      };
 
       const harvest = (data, cfg) => {
+        let added = 0;
         const list = data.freeMsisdnList || [];
         for (const n of list) {
+          if (found.length >= resultLimit) break;
           const brand = String(n).startsWith('88018') ? 'ROBI' : 'AIRTEL';
-          // only keep if operator matches selection
           if (!prefixes.some((p) => String(n).startsWith(p))) continue;
-          if (matchesPattern(n, cfg.mode, cfg)) addFound(n, brand);
+          if (matchesPattern(n, cfg.mode, cfg) && addFound(n, brand)) added++;
         }
+        return added;
       };
 
       const worker = async () => {
-        while (!stopped && checked < maxCheck) {
-          let sub = queue.shift();
-          if (!sub) {
-            const next = gen.next();
-            if (next.done) break;
-            sub = next.value;
-          }
-          // rotate prefixes
+        while (!shouldStop()) {
+          const next = gen.next();
+          if (next.done) { genDone = true; break; }
+          const sub = next.value;
           for (const prefix of prefixes) {
-            if (stopped || checked >= maxCheck) break;
+            if (shouldStop()) break;
             const msisdn = prefix + sub;
             const brand = brandForPrefix(prefix);
+            let gotNew = 0;
             try {
               const data = await checkOne(msisdn, brand, abortCtrl.signal);
               checked++;
               $('checkedCount').textContent = toBn(checked);
-              $('progressFill').style.width = Math.min(100, (checked / maxCheck) * 100) + '%';
-              if (data.available === true && matchesPattern(msisdn, cfg.mode, cfg)) {
-                addFound(msisdn, brand);
+              if (!unlimited) {
+                progressEl.style.width = Math.min(99, (found.length / resultLimit) * 100) + '%';
               }
-              harvest(data, cfg);
+              if (data.available === true && matchesPattern(msisdn, cfg.mode, cfg)) {
+                if (addFound(msisdn, brand)) gotNew++;
+              }
+              gotNew += harvest(data, cfg);
             } catch (err) {
-              if (err.name === 'AbortError') { stopped = true; break; }
-              // soft fail — continue
+              if (err.name === 'AbortError') {
+                stopped = true;
+                stopReason = 'user';
+                break;
+              }
+              // soft fail with backoff already in checkOne; count as stale-ish
               checked++;
               $('checkedCount').textContent = toBn(checked);
+              await new Promise((r) => setTimeout(r, DELAY_MS * 2));
             }
+            if (gotNew > 0) staleCalls = 0;
+            else staleCalls++;
             await new Promise((r) => setTimeout(r, DELAY_MS));
           }
         }
@@ -997,14 +1116,30 @@
 
       try {
         await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+        if (!stopReason && genDone) stopReason = 'exhausted';
+        if (!stopReason && stopped) stopReason = 'user';
       } finally {
         running = false;
         $('startBtn').disabled = false;
         $('stopBtn').classList.remove('show');
-        $('statusText').textContent = stopped ? 'থামানো' : 'সম্পন্ন';
-        $('progressFill').style.width = '100%';
-        if (found.length) toast(toBn(found.length) + ' টি নাম্বার পাওয়া গেছে!');
-        else toast('মিল পাওয়া যায়নি — আবার চেষ্টা করুন');
+        progressBar.classList.remove('indeterminate');
+        progressEl.style.width = '100%';
+        // Final sorted render for large lists
+        if (found.length > 80) renderFound(true);
+        const statusMap = {
+          user: 'থামানো',
+          limit: 'সম্পন্ন',
+          stale: 'সম্পন্ন',
+          exhausted: 'সম্পন্ন'
+        };
+        $('statusText').textContent = statusMap[stopReason] || 'সম্পন্ন';
+        if (found.length) {
+          let msg = toBn(found.length) + ' টি নাম্বার পাওয়া গেছে!';
+          if (stopReason === 'stale') msg += ' (নতুন আর আসেনি)';
+          toast(msg);
+        } else {
+          toast('মিল পাওয়া যায়নি — আবার চেষ্টা করুন');
+        }
       }
     }
 
@@ -1013,6 +1148,36 @@
     });
     $('stopBtn').addEventListener('click', () => {
       if (abortCtrl) abortCtrl.abort();
+    });
+
+    // Export: copy all / CSV (covers every found result)
+    function exportLines() {
+      return found.map((item) => localDisplay(item.msisdn));
+    }
+    $('copyAllBtn').addEventListener('click', async () => {
+      if (!found.length) { toast('কপি করার মতো ফলাফল নেই'); return; }
+      const text = exportLines().join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(toBn(found.length) + ' টি নাম্বার কপি হয়েছে');
+      } catch {
+        toast('কপি করা যায়নি');
+      }
+    });
+    $('csvBtn').addEventListener('click', () => {
+      if (!found.length) { toast('ডাউনলোড করার মতো ফলাফল নেই'); return; }
+      const rows = [['msisdn_local', 'msisdn_intl', 'brand', 'score']];
+      found.forEach((item) => {
+        rows.push([localDisplay(item.msisdn), item.msisdn, item.brand, String(item.score)]);
+      });
+      const csv = rows.map((r) => r.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'number-finder-results.csv';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      toast('CSV ডাউনলোড শুরু হয়েছে');
     });
 
     // PWA
