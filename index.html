@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#E85D04" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+  <meta name="description" content="পছন্দের রবি (০১৮) ও এয়ারটেল (০১৬) মোবাইল নাম্বার খুঁজুন — সহজ ও আধুনিক" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="নাম্বার ফাইন্ডার" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <title>নাম্বার ফাইন্ডার — রবি / এয়ারটেল</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --bg2: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --accent: #E85D04;
+      --accent2: #f48c06;
+      --robi: #e85d04;
+      --airtel: #e11d48;
+      --ok: #059669;
+      --danger: #dc2626;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius: 16px;
+      --tap: 48px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --bg2: #121a2b;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --border: #1e293b;
+        --shadow: 0 8px 28px rgba(0,0,0,0.35);
+      }
+    }
+    html[data-theme="light"] {
+      --bg: #f6f7fb; --bg2: #ffffff; --text: #0f172a; --muted: #64748b;
+      --border: #e2e8f0; --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    html[data-theme="dark"] {
+      --bg: #0b1220; --bg2: #121a2b; --text: #f1f5f9; --muted: #94a3b8;
+      --border: #1e293b; --shadow: 0 8px 28px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      line-height: 1.45;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 16px 40px;
+    }
+    header.app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-top: env(safe-area-inset-top);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .brand-mark {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, #E85D04, #f48c06);
+      color: #fff; display: grid; place-items: center;
+      font-weight: 800; font-size: 22px; box-shadow: var(--shadow);
+    }
+    .brand h1 {
+      margin: 0; font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;
+    }
+    .brand p { margin: 0; color: var(--muted); font-size: 0.78rem; }
+    .icon-btn {
+      width: var(--tap); height: var(--tap); border-radius: 14px;
+      border: 1px solid var(--border); background: var(--bg2);
+      color: var(--text); font-size: 1.2rem; cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .seg {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .seg label {
+      position: relative; cursor: pointer;
+    }
+    .seg input { position: absolute; opacity: 0; pointer-events: none; }
+    .seg span {
+      display: flex; align-items: center; justify-content: center;
+      min-height: var(--tap); border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-weight: 700; font-size: 0.9rem; gap: 6px;
+      transition: 0.15s ease;
+    }
+    .seg input:checked + span {
+      border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--bg2));
+      color: var(--accent);
+    }
+    .seg.ops span.robi { color: var(--robi); }
+    .seg.ops span.airtel { color: var(--airtel); }
+    .modes {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .modes label { cursor: pointer; }
+    .modes input { position: absolute; opacity: 0; pointer-events: none; }
+    .modes span {
+      display: block; padding: 12px 10px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 0.85rem; font-weight: 600; text-align: center;
+      min-height: 48px; display: flex; align-items: center; justify-content: center;
+    }
+    .modes input:checked + span {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 14%, var(--bg2));
+      color: var(--accent);
+    }
+    .field { margin-top: 12px; }
+    .field label {
+      display: block; font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 6px; font-weight: 600;
+    }
+    .field input, .field select {
+      width: 100%; height: var(--tap); border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      color: var(--text); padding: 0 14px; font-size: 1.05rem;
+      font-family: inherit; outline: none;
+    }
+    .field input:focus, .field select:focus { border-color: var(--accent); }
+    .hint { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+    .mask-row {
+      display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 1rem; letter-spacing: 0.04em;
+    }
+    .mask-row input {
+      width: 36px; height: 44px; text-align: center; padding: 0;
+      border-radius: 10px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 1.1rem;
+      font-family: inherit;
+    }
+    .mask-row .prefix {
+      font-weight: 800; color: var(--accent); padding: 0 4px;
+    }
+    .actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;
+    }
+    .btn {
+      min-height: var(--tap); border: none; border-radius: 14px;
+      font-weight: 800; font-size: 1rem; font-family: inherit;
+      cursor: pointer; display: inline-flex; align-items: center;
+      justify-content: center; gap: 8px; padding: 0 16px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #E85D04, #f48c06);
+      color: #fff; box-shadow: 0 8px 20px rgba(232, 93, 4, 0.35);
+      grid-column: 1 / -1;
+    }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    .btn-stop {
+      background: color-mix(in srgb, var(--danger) 14%, var(--bg2));
+      color: var(--danger); border: 1.5px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+      display: none;
+    }
+    .btn-stop.show { display: inline-flex; }
+    .btn-ghost {
+      background: var(--bg2); color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .progress-wrap { margin-top: 12px; }
+    .progress-bar {
+      height: 10px; border-radius: 999px; background: var(--border); overflow: hidden;
+    }
+    .progress-bar > i {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, #E85D04, #f48c06, #ffba08);
+      border-radius: inherit; transition: width 0.25s ease;
+    }
+    .stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px;
+    }
+    .stat {
+      background: var(--bg); border-radius: 12px; padding: 10px 8px; text-align: center;
+      border: 1px solid var(--border);
+    }
+    .stat b { display: block; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+    .stat span { font-size: 0.72rem; color: var(--muted); }
+    .stat.ok b { color: var(--ok); }
+    .results-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      margin-bottom: 10px;
+    }
+    .results-head h2 { margin: 0; }
+    .tabs { display: flex; gap: 6px; }
+    .tabs button {
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--muted); border-radius: 999px; padding: 6px 12px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .result-list { display: flex; flex-direction: column; gap: 10px; }
+    .empty {
+      text-align: center; color: var(--muted); padding: 28px 12px; font-size: 0.92rem;
+    }
+    .result {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px;
+      padding: 14px; border-radius: 14px; border: 1px solid var(--border);
+      background: var(--bg); align-items: center;
+    }
+    .result .num {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 1.15rem; font-weight: 800; letter-spacing: 0.02em;
+    }
+    .result .meta {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center;
+    }
+    .badge {
+      font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--muted);
+    }
+    .badge.robi { color: var(--robi); border-color: color-mix(in srgb, var(--robi) 40%, var(--border)); background: color-mix(in srgb, var(--robi) 10%, transparent); }
+    .badge.airtel { color: var(--airtel); border-color: color-mix(in srgb, var(--airtel) 40%, var(--border)); background: color-mix(in srgb, var(--airtel) 10%, transparent); }
+    .badge.score { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, var(--border)); }
+    .result-actions { display: flex; gap: 6px; }
+    .mini-btn {
+      width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--bg2); cursor: pointer; font-size: 1.05rem;
+      display: grid; place-items: center;
+    }
+    .mini-btn.fav.on { color: #eab308; border-color: #eab308; }
+    .note {
+      font-size: 0.78rem; color: var(--muted); line-height: 1.55;
+      padding: 12px 14px; border-radius: 12px;
+      background: color-mix(in srgb, var(--accent) 8%, var(--bg2));
+      border: 1px dashed color-mix(in srgb, var(--accent) 35%, var(--border));
+    }
+    footer {
+      text-align: center; color: var(--muted); font-size: 0.72rem;
+      margin-top: 18px; line-height: 1.6;
+    }
+    .toast {
+      position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
+      transform: translateX(-50%) translateY(120%);
+      background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 999px;
+      font-size: 0.85rem; font-weight: 600; z-index: 50;
+      transition: transform 0.25s ease; pointer-events: none; white-space: nowrap;
+      max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .hidden { display: none !important; }
+    @media (min-width: 420px) {
+      .modes { grid-template-columns: 1fr 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">#</div>
+        <div>
+          <h1>নাম্বার ফাইন্ডার</h1>
+          <p>রবি ০১৮ · এয়ারটেল ০১৬</p>
+        </div>
+      </div>
+      <button class="icon-btn" id="themeBtn" type="button" aria-label="থিম বদলান" title="থিম">🌓</button>
+    </header>
+
+    <section class="card">
+      <h2>📡 অপারেটর</h2>
+      <div class="seg ops" id="operatorSeg">
+        <label><input type="radio" name="op" value="robi" checked /><span class="robi">রবি ০১৮</span></label>
+        <label><input type="radio" name="op" value="airtel" /><span class="airtel">এয়ারটেল ০১৬</span></label>
+        <label><input type="radio" name="op" value="both" /><span>দুটোই</span></label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>✨ প্যাটার্ন</h2>
+      <div class="modes" id="modeSeg">
+        <label><input type="radio" name="mode" value="ends" checked /><span>শেষে থাকে</span></label>
+        <label><input type="radio" name="mode" value="contains" /><span>মাঝে থাকে</span></label>
+        <label><input type="radio" name="mode" value="starts" /><span>প্রিফিক্সের পর</span></label>
+        <label><input type="radio" name="mode" value="repeat" /><span>AAA / AAAA</span></label>
+        <label><input type="radio" name="mode" value="abab" /><span>ABAB</span></label>
+        <label><input type="radio" name="mode" value="run" /><span>১২৩৪ / ৪৩২১</span></label>
+        <label><input type="radio" name="mode" value="mirror" /><span>মিরর / প্যালিনড্রোম</span></label>
+        <label><input type="radio" name="mode" value="mask" /><span>কাস্টম মাস্ক</span></label>
+        <label><input type="radio" name="mode" value="date" /><span>তারিখ (DDMMYY)</span></label>
+      </div>
+
+      <div class="field" id="patternField">
+        <label for="patternInput" id="patternLabel">যে সংখ্যা দিয়ে শেষ হবে</label>
+        <input id="patternInput" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="যেমন: ৭৮৬" autocomplete="off" />
+        <div class="hint" id="patternHint">উদাহরণ: ৭৮৬ → …৭৮৬ দিয়ে শেষ হওয়া নাম্বার</div>
+      </div>
+
+      <div class="field hidden" id="repeatField">
+        <label for="repeatLen">কতবার পুনরাবৃত্তি</label>
+        <select id="repeatLen">
+          <option value="3">AAA (৩ সংখ্যা)</option>
+          <option value="4" selected>AAAA (৪ সংখ্যা)</option>
+          <option value="5">AAAAA (৫ সংখ্যা)</option>
+        </select>
+        <div class="hint">যেমন ৭৭৭৭, ০০০০ — শেষের দিকে খোঁজা হবে</div>
+      </div>
+
+      <div class="field hidden" id="runField">
+        <label for="runDir">ধরন</label>
+        <select id="runDir">
+          <option value="asc">আরোহী (১২৩৪)</option>
+          <option value="desc">অবতরণ (৪৩২১)</option>
+          <option value="both">দুটোই</option>
+        </select>
+        <label for="runLen" style="margin-top:10px">দৈর্ঘ্য</label>
+        <select id="runLen">
+          <option value="3">৩ সংখ্যা</option>
+          <option value="4" selected>৪ সংখ্যা</option>
+          <option value="5">৫ সংখ্যা</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="maskField">
+        <label>মাস্ক (X = যেকোনো সংখ্যা)</label>
+        <div class="mask-row" id="maskRow"></div>
+        <div class="hint">যেমন: ০১৮X-XX৭৭৭৭ — নির্দিষ্ট ঘরগুলো ফিক্স করুন, বাকি X রাখুন</div>
+      </div>
+
+      <div class="field hidden" id="dateField">
+        <label for="dateInput">তারিখ (DDMMYY)</label>
+        <input id="dateInput" inputmode="numeric" maxlength="6" placeholder="যেমন: ১৫০৮৯৬" autocomplete="off" />
+        <div class="hint">জন্মদিন / বিশেষ তারিখ — শেষ ৬ সংখ্যায় মিলবে</div>
+      </div>
+
+      <div class="field">
+        <label for="maxCheck">সর্বোচ্চ কতগুলো চেক করবে</label>
+        <select id="maxCheck">
+          <option value="50">৫০</option>
+          <option value="100" selected>১০০</option>
+          <option value="200">২০০</option>
+          <option value="500">৫০০</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="actions">
+        <button class="btn btn-primary" id="startBtn" type="button">🔍 খুঁজুন</button>
+        <button class="btn btn-stop" id="stopBtn" type="button">⏹️ থামান</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" aria-hidden="true"><i id="progressFill"></i></div>
+        <div class="stats">
+          <div class="stat"><b id="checkedCount">০</b><span>চেক হয়েছে</span></div>
+          <div class="stat ok"><b id="foundCount">০</b><span>পাওয়া গেছে</span></div>
+          <div class="stat"><b id="statusText">প্রস্তুত</b><span>স্ট্যাটাস</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="results-head">
+        <h2>📋 ফলাফল</h2>
+        <div class="tabs">
+          <button type="button" class="active" data-tab="found" id="tabFound">পাওয়া</button>
+          <button type="button" data-tab="favs" id="tabFavs">পছন্দ ⭐</button>
+        </div>
+      </div>
+      <div id="resultsList" class="result-list">
+        <div class="empty">এখনো কোনো নাম্বার পাওয়া যায়নি। প্যাটার্ন বেছে খুঁজুন।</div>
+      </div>
+      <div id="favsList" class="result-list hidden">
+        <div class="empty">পছন্দের তালিকা খালি। ⭐ চাপুন।</div>
+      </div>
+    </section>
+
+    <p class="note">
+      ⚠️ এই টুল শুধুমাত্র নাম্বারের <b>উপলব্ধতা</b> দেখায়। সিম কিনতে রবি/এয়ারটেলের অফিসিয়াল আউটলেট বা
+      <b>My Robi / My Airtel</b> অ্যাপ ব্যবহার করুন। রবি/এয়ারটেলের সাথে কোনো সম্পর্ক নেই।
+    </p>
+
+    <footer>
+      Number Finder · mdrobiny<br />
+      Not affiliated with Robi Axiata / Airtel Bangladesh
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+  (() => {
+    const API = 'https://da-api.robi.com.bd/da-nll/free-msisdn/get-msisdn-list';
+    const BN = '০১২৩৪৫৬৭৮৯';
+    const EN = '0123456789';
+    const toBn = (s) => String(s).replace(/\d/g, (d) => BN[+d]);
+    const toEn = (s) => String(s).replace(/[০-৯]/g, (d) => EN[BN.indexOf(d)]).replace(/\D/g, '');
+
+    const $ = (id) => document.getElementById(id);
+    const toast = (msg) => {
+      const el = $('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove('show'), 1800);
+    };
+
+    // Theme
+    const themeBtn = $('themeBtn');
+    const savedTheme = localStorage.getItem('nf-theme');
+    if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+    themeBtn.addEventListener('click', () => {
+      const cur = document.documentElement.dataset.theme ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem('nf-theme', next);
+    });
+
+    // Mask UI (8 subscriber digits after 018/016)
+    const maskRow = $('maskRow');
+    function rebuildMask(prefix) {
+      maskRow.innerHTML = '';
+      const pre = document.createElement('span');
+      pre.className = 'prefix';
+      pre.textContent = prefix;
+      maskRow.appendChild(pre);
+      for (let i = 0; i < 8; i++) {
+        if (i === 2 || i === 5) {
+          const dash = document.createElement('span');
+          dash.textContent = '-';
+          dash.style.opacity = '0.4';
+          maskRow.appendChild(dash);
+        }
+        const inp = document.createElement('input');
+        inp.maxLength = 1;
+        inp.inputMode = 'numeric';
+        inp.placeholder = 'X';
+        inp.dataset.i = i;
+        inp.addEventListener('input', (e) => {
+          let v = toEn(e.target.value).slice(0, 1);
+          e.target.value = v;
+          if (v && e.target.nextElementSibling) {
+            let n = e.target.nextElementSibling;
+            while (n && n.tagName !== 'INPUT') n = n.nextElementSibling;
+            if (n) n.focus();
+          }
+        });
+        maskRow.appendChild(inp);
+      }
+    }
+    rebuildMask('018');
+
+    function currentOp() {
+      return document.querySelector('input[name="op"]:checked').value;
+    }
+    function currentMode() {
+      return document.querySelector('input[name="mode"]:checked').value;
+    }
+    function prefixesForOp(op) {
+      if (op === 'robi') return ['88018'];
+      if (op === 'airtel') return ['88016'];
+      return ['88018', '88016'];
+    }
+    function brandForPrefix(p) {
+      return p.endsWith('018') ? 'ROBI' : 'AIRTEL';
+    }
+    function localDisplay(msisdn) {
+      // 88018XXXXXXXX → 018XXXXXXXX
+      const s = String(msisdn);
+      if (s.startsWith('880')) return '0' + s.slice(3);
+      return s;
+    }
+    function formatNice(msisdn) {
+      const d = localDisplay(msisdn);
+      // 01812-345-678
+      return d.slice(0, 5) + '-' + d.slice(5, 8) + '-' + d.slice(8);
+    }
+
+    // Mode UI switching
+    const modeHints = {
+      ends: ['যে সংখ্যা দিয়ে শেষ হবে', 'যেমন: ৭৮৬', 'উদাহরণ: ৭৮৬ → …৭৮৬ দিয়ে শেষ'],
+      contains: ['যে সংখ্যা থাকবে', 'যেমন: ৭৮৬', 'যেকোনো জায়গায় ৭৮৬ থাকলে মিলবে'],
+      starts: ['প্রিফিক্সের পরের সংখ্যা', 'যেমন: ১২৩', '০১৮১২৩… দিয়ে শুরু'],
+      date: null
+    };
+    function syncModeUI() {
+      const mode = currentMode();
+      const show = (id, on) => $(id).classList.toggle('hidden', !on);
+      show('patternField', ['ends', 'contains', 'starts'].includes(mode));
+      show('repeatField', mode === 'repeat');
+      show('runField', mode === 'run');
+      show('maskField', mode === 'mask');
+      show('dateField', mode === 'date');
+      if (modeHints[mode]) {
+        $('patternLabel').textContent = modeHints[mode][0];
+        $('patternInput').placeholder = modeHints[mode][1];
+        $('patternHint').textContent = modeHints[mode][2];
+      }
+      const op = currentOp();
+      const pre = op === 'airtel' ? '016' : '018';
+      if (mode === 'mask') rebuildMask(pre);
+    }
+    document.querySelectorAll('input[name="mode"]').forEach((el) => el.addEventListener('change', syncModeUI));
+    document.querySelectorAll('input[name="op"]').forEach((el) => el.addEventListener('change', () => {
+      if (currentMode() === 'mask') {
+        rebuildMask(el.value === 'airtel' ? '016' : '018');
+      }
+    }));
+    syncModeUI();
+
+    // Beauty score
+    function beautyScore(msisdn) {
+      const digs = String(msisdn).slice(-8); // last 8
+      let score = 10;
+      // repeating end
+      if (/(\d)\1{3}$/.test(digs)) score += 40;
+      else if (/(\d)\1{2}$/.test(digs)) score += 25;
+      else if (/(\d)\1$/.test(digs)) score += 10;
+      // ABAB
+      if (/(\d)(\d)\1\2$/.test(digs)) score += 20;
+      // ascending / descending
+      if (/0123|1234|2345|3456|4567|5678|6789/.test(digs)) score += 30;
+      if (/9876|8765|7654|6543|5432|4321|3210/.test(digs)) score += 30;
+      // palindrome of 8 or 6
+      if (digs === digs.split('').reverse().join('')) score += 35;
+      else if (digs.slice(-6) === digs.slice(-6).split('').reverse().join('')) score += 20;
+      // lucky 786
+      if (digs.endsWith('786') || digs.includes('786')) score += 25;
+      // many unique digits penalty
+      const uniq = new Set(digs).size;
+      if (uniq <= 3) score += 15;
+      return Math.min(99, score);
+    }
+
+    // Pattern match
+    function matchesPattern(msisdn, mode, cfg) {
+      const digs = String(msisdn).slice(-8);
+      const fullLocal = '0' + String(msisdn).slice(3); // 018...
+      switch (mode) {
+        case 'ends':
+          return cfg.pat && digs.endsWith(cfg.pat);
+        case 'contains':
+          return cfg.pat && digs.includes(cfg.pat);
+        case 'starts':
+          return cfg.pat && digs.startsWith(cfg.pat);
+        case 'repeat': {
+          const n = cfg.repeatLen;
+          return new RegExp(`(\\d)\\1{${n - 1}}$`).test(digs);
+        }
+        case 'abab':
+          return /(\d)(\d)\1\2$/.test(digs) && digs.slice(-4, -3) !== digs.slice(-3, -2);
+        case 'run': {
+          const len = cfg.runLen;
+          const asc = '0123456789';
+          const desc = '9876543210';
+          const end = digs.slice(-len);
+          const okAsc = asc.includes(end);
+          const okDesc = desc.includes(end);
+          if (cfg.runDir === 'asc') return okAsc;
+          if (cfg.runDir === 'desc') return okDesc;
+          return okAsc || okDesc;
+        }
+        case 'mirror': {
+          const s = digs;
+          return s === s.split('').reverse().join('') ||
+            s.slice(-6) === s.slice(-6).split('').reverse().join('');
+        }
+        case 'mask': {
+          for (let i = 0; i < 8; i++) {
+            if (cfg.mask[i] !== null && digs[i] !== cfg.mask[i]) return false;
+          }
+          return true;
+        }
+        case 'date':
+          return cfg.pat && digs.endsWith(cfg.pat);
+        default:
+          return false;
+      }
+    }
+
+    // Candidate generators (subscriber 8 digits)
+    function* genEnds(pat) {
+      const free = 8 - pat.length;
+      if (free < 0) return;
+      const max = Math.pow(10, free);
+      // shuffle-ish: random start then wrap for variety
+      const start = Math.floor(Math.random() * max);
+      for (let i = 0; i < max; i++) {
+        const n = (start + i) % max;
+        yield String(n).padStart(free, '0') + pat;
+      }
+    }
+    function* genContains(pat) {
+      const L = pat.length;
+      if (L > 8) return;
+      // place pattern at each possible position
+      for (let pos = 0; pos <= 8 - L; pos++) {
+        const left = pos;
+        const right = 8 - L - pos;
+        const maxL = Math.pow(10, left) || 1;
+        const maxR = Math.pow(10, right) || 1;
+        for (let a = 0; a < maxL; a++) {
+          for (let b = 0; b < maxR; b++) {
+            const ls = left ? String(a).padStart(left, '0') : '';
+            const rs = right ? String(b).padStart(right, '0') : '';
+            yield ls + pat + rs;
+          }
+        }
+      }
+    }
+    function* genStarts(pat) {
+      const free = 8 - pat.length;
+      if (free < 0) return;
+      const max = Math.pow(10, free);
+      const start = Math.floor(Math.random() * max);
+      for (let i = 0; i < max; i++) {
+        const n = (start + i) % max;
+        yield pat + String(n).padStart(free, '0');
+      }
+    }
+    function* genRepeat(len) {
+      for (let d = 0; d <= 9; d++) {
+        const rep = String(d).repeat(len);
+        const free = 8 - len;
+        const max = Math.pow(10, free);
+        for (let i = 0; i < max; i++) {
+          yield String(i).padStart(free, '0') + rep;
+        }
+      }
+    }
+    function* genAbab() {
+      for (let a = 0; a <= 9; a++) {
+        for (let b = 0; b <= 9; b++) {
+          if (a === b) continue;
+          const pat = `${a}${b}${a}${b}`;
+          const free = 4;
+          for (let i = 0; i < 10000; i++) {
+            yield String(i).padStart(free, '0') + pat;
+          }
+        }
+      }
+    }
+    function* genRun(len, dir) {
+      const sequences = [];
+      const asc = '0123456789';
+      const desc = '9876543210';
+      if (dir !== 'desc') {
+        for (let i = 0; i <= 10 - len; i++) sequences.push(asc.slice(i, i + len));
+      }
+      if (dir !== 'asc') {
+        for (let i = 0; i <= 10 - len; i++) sequences.push(desc.slice(i, i + len));
+      }
+      for (const seq of sequences) {
+        const free = 8 - len;
+        const max = Math.pow(10, free);
+        for (let i = 0; i < max; i++) {
+          yield String(i).padStart(free, '0') + seq;
+        }
+      }
+    }
+    function* genMirror() {
+      // 8-digit palindromes: ABCDDCBA
+      for (let a = 0; a <= 9; a++)
+        for (let b = 0; b <= 9; b++)
+          for (let c = 0; c <= 9; c++)
+            for (let d = 0; d <= 9; d++)
+              yield `${a}${b}${c}${d}${d}${c}${b}${a}`;
+      // also 6-digit palindrome ending: XX ABCCBA
+      for (let x = 0; x <= 99; x++) {
+        const xs = String(x).padStart(2, '0');
+        for (let a = 0; a <= 9; a++)
+          for (let b = 0; b <= 9; b++)
+            for (let c = 0; c <= 9; c++)
+              yield `${xs}${a}${b}${c}${c}${b}${a}`;
+      }
+    }
+    function* genMask(mask) {
+      const freeIdx = [];
+      mask.forEach((v, i) => { if (v === null) freeIdx.push(i); });
+      const free = freeIdx.length;
+      const max = Math.pow(10, free);
+      if (free > 6) {
+        // too many free — sample randomly
+        const seen = new Set();
+        let tries = 0;
+        while (seen.size < Math.min(5000, max) && tries < 20000) {
+          tries++;
+          const arr = mask.map((v) => (v === null ? String(Math.floor(Math.random() * 10)) : v));
+          const s = arr.join('');
+          if (!seen.has(s)) { seen.add(s); yield s; }
+        }
+        return;
+      }
+      for (let i = 0; i < max; i++) {
+        const fill = String(i).padStart(free, '0');
+        const arr = mask.slice();
+        freeIdx.forEach((idx, j) => { arr[idx] = fill[j]; });
+        yield arr.join('');
+      }
+    }
+
+    function getConfig() {
+      const mode = currentMode();
+      const cfg = { mode, pat: '', repeatLen: 4, runLen: 4, runDir: 'both', mask: [] };
+      if (['ends', 'contains', 'starts'].includes(mode)) {
+        cfg.pat = toEn($('patternInput').value);
+      } else if (mode === 'date') {
+        cfg.pat = toEn($('dateInput').value);
+      } else if (mode === 'repeat') {
+        cfg.repeatLen = +$('repeatLen').value;
+      } else if (mode === 'run') {
+        cfg.runLen = +$('runLen').value;
+        cfg.runDir = $('runDir').value;
+      } else if (mode === 'mask') {
+        cfg.mask = [...maskRow.querySelectorAll('input')].map((inp) => {
+          const v = toEn(inp.value);
+          return v === '' ? null : v;
+        });
+      }
+      return cfg;
+    }
+
+    function* candidates(cfg) {
+      switch (cfg.mode) {
+        case 'ends':
+        case 'date':
+          yield* genEnds(cfg.pat); break;
+        case 'contains':
+          yield* genContains(cfg.pat); break;
+        case 'starts':
+          yield* genStarts(cfg.pat); break;
+        case 'repeat':
+          yield* genRepeat(cfg.repeatLen); break;
+        case 'abab':
+          yield* genAbab(); break;
+        case 'run':
+          yield* genRun(cfg.runLen, cfg.runDir); break;
+        case 'mirror':
+          yield* genMirror(); break;
+        case 'mask':
+          yield* genMask(cfg.mask); break;
+      }
+    }
+
+    // Favorites
+    const FAV_KEY = 'nf-favorites-v1';
+    function loadFavs() {
+      try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+      catch { return []; }
+    }
+    function saveFavs(list) { localStorage.setItem(FAV_KEY, JSON.stringify(list)); }
+    function isFav(msisdn) { return loadFavs().some((x) => x.msisdn === msisdn); }
+    function toggleFav(item) {
+      let list = loadFavs();
+      const i = list.findIndex((x) => x.msisdn === item.msisdn);
+      if (i >= 0) list.splice(i, 1);
+      else list.unshift(item);
+      saveFavs(list);
+      renderFavs();
+      // update star on found list if present
+      const btn = document.querySelector(`[data-fav="${item.msisdn}"]`);
+      if (btn) btn.classList.toggle('on', isFav(item.msisdn));
+      toast(isFav(item.msisdn) ? 'পছন্দে যোগ হয়েছে ⭐' : 'পছন্দ থেকে সরানো হয়েছে');
+    }
+
+    // Results state
+    const found = []; // {msisdn, brand, score}
+    const foundSet = new Set();
+
+    function renderResultCard(item, withFavBtn = true) {
+      const brand = item.brand === 'ROBI' ? 'robi' : 'airtel';
+      const brandLabel = item.brand === 'ROBI' ? 'রবি ০১৮' : 'এয়ারটেল ০১৬';
+      const favOn = isFav(item.msisdn) ? 'on' : '';
+      const el = document.createElement('div');
+      el.className = 'result';
+      el.innerHTML = `
+        <div>
+          <div class="num">${toBn(formatNice(item.msisdn))}</div>
+          <div class="meta">
+            <span class="badge ${brand}">${brandLabel}</span>
+            <span class="badge score">সৌন্দর্য ${toBn(item.score)}</span>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button class="mini-btn" type="button" title="কপি" data-copy="${item.msisdn}">📋</button>
+          ${withFavBtn ? `<button class="mini-btn fav ${favOn}" type="button" title="পছন্দ" data-fav="${item.msisdn}">⭐</button>` : ''}
+        </div>`;
+      el.querySelector('[data-copy]').addEventListener('click', async () => {
+        const local = localDisplay(item.msisdn);
+        try {
+          await navigator.clipboard.writeText(local);
+          toast('কপি হয়েছে: ' + toBn(local));
+        } catch {
+          toast('কপি করা যায়নি');
+        }
+      });
+      const favBtn = el.querySelector('[data-fav]');
+      if (favBtn) favBtn.addEventListener('click', () => toggleFav(item));
+      return el;
+    }
+
+    function renderFound() {
+      const list = $('resultsList');
+      if (!found.length) {
+        list.innerHTML = '<div class="empty">এখনো কোনো নাম্বার পাওয়া যায়নি। প্যাটার্ন বেছে খুঁজুন।</div>';
+        return;
+      }
+      list.innerHTML = '';
+      // sort by beauty score desc
+      const sorted = [...found].sort((a, b) => b.score - a.score);
+      sorted.forEach((item) => list.appendChild(renderResultCard(item)));
+      $('foundCount').textContent = toBn(found.length);
+    }
+    function renderFavs() {
+      const list = $('favsList');
+      const favs = loadFavs();
+      if (!favs.length) {
+        list.innerHTML = '<div class="empty">পছন্দের তালিকা খালি। ⭐ চাপুন।</div>';
+        return;
+      }
+      list.innerHTML = '';
+      favs.forEach((item) => list.appendChild(renderResultCard(item)));
+    }
+    renderFavs();
+
+    // Tabs
+    document.querySelectorAll('.tabs button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tabs button').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        $('resultsList').classList.toggle('hidden', tab !== 'found');
+        $('favsList').classList.toggle('hidden', tab !== 'favs');
+        if (tab === 'favs') renderFavs();
+      });
+    });
+
+    // API caller
+    async function checkOne(msisdn, brand, signal) {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msisdn, brand, simCategory: 'PREPAID' }),
+        signal
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    function addFound(msisdn, brand) {
+      const key = msisdn + '|' + brand;
+      if (foundSet.has(key)) return false;
+      foundSet.add(key);
+      found.push({ msisdn, brand, score: beautyScore(msisdn) });
+      renderFound();
+      return true;
+    }
+
+    // Search engine with polite concurrency
+    let abortCtrl = null;
+    let running = false;
+
+    async function runSearch() {
+      const cfg = getConfig();
+      const mode = cfg.mode;
+      if (['ends', 'contains', 'starts'].includes(mode) && !cfg.pat) {
+        toast('প্যাটার্ন লিখুন');
+        $('patternInput').focus();
+        return;
+      }
+      if (mode === 'date' && !/^\d{6}$/.test(cfg.pat)) {
+        toast('৬ সংখ্যার তারিখ দিন (DDMMYY)');
+        return;
+      }
+      if (mode === 'mask' && cfg.mask.every((x) => x === null)) {
+        toast('মাস্কে অন্তত একটি সংখ্যা দিন');
+        return;
+      }
+
+      // reset
+      found.length = 0;
+      foundSet.clear();
+      renderFound();
+      running = true;
+      abortCtrl = new AbortController();
+      $('startBtn').disabled = true;
+      $('stopBtn').classList.add('show');
+      $('statusText').textContent = 'চলছে';
+      $('checkedCount').textContent = toBn(0);
+      $('foundCount').textContent = toBn(0);
+      $('progressFill').style.width = '0%';
+
+      const maxCheck = +$('maxCheck').value;
+      const prefixes = prefixesForOp(currentOp());
+      const gen = candidates(cfg);
+      const queue = [];
+      const CONCURRENCY = 3;
+      const DELAY_MS = 120;
+      let checked = 0;
+      let stopped = false;
+
+      const harvest = (data, cfg) => {
+        const list = data.freeMsisdnList || [];
+        for (const n of list) {
+          const brand = String(n).startsWith('88018') ? 'ROBI' : 'AIRTEL';
+          // only keep if operator matches selection
+          if (!prefixes.some((p) => String(n).startsWith(p))) continue;
+          if (matchesPattern(n, cfg.mode, cfg)) addFound(n, brand);
+        }
+      };
+
+      const worker = async () => {
+        while (!stopped && checked < maxCheck) {
+          let sub = queue.shift();
+          if (!sub) {
+            const next = gen.next();
+            if (next.done) break;
+            sub = next.value;
+          }
+          // rotate prefixes
+          for (const prefix of prefixes) {
+            if (stopped || checked >= maxCheck) break;
+            const msisdn = prefix + sub;
+            const brand = brandForPrefix(prefix);
+            try {
+              const data = await checkOne(msisdn, brand, abortCtrl.signal);
+              checked++;
+              $('checkedCount').textContent = toBn(checked);
+              $('progressFill').style.width = Math.min(100, (checked / maxCheck) * 100) + '%';
+              if (data.available === true && matchesPattern(msisdn, cfg.mode, cfg)) {
+                addFound(msisdn, brand);
+              }
+              harvest(data, cfg);
+            } catch (err) {
+              if (err.name === 'AbortError') { stopped = true; break; }
+              // soft fail — continue
+              checked++;
+              $('checkedCount').textContent = toBn(checked);
+            }
+            await new Promise((r) => setTimeout(r, DELAY_MS));
+          }
+        }
+      };
+
+      try {
+        await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
+      } finally {
+        running = false;
+        $('startBtn').disabled = false;
+        $('stopBtn').classList.remove('show');
+        $('statusText').textContent = stopped ? 'থামানো' : 'সম্পন্ন';
+        $('progressFill').style.width = '100%';
+        if (found.length) toast(toBn(found.length) + ' টি নাম্বার পাওয়া গেছে!');
+        else toast('মিল পাওয়া যায়নি — আবার চেষ্টা করুন');
+      }
+    }
+
+    $('startBtn').addEventListener('click', () => {
+      if (!running) runSearch();
+    });
+    $('stopBtn').addEventListener('click', () => {
+      if (abortCtrl) abortCtrl.abort();
+    });
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // Accept Bangla digits in inputs
+    ['patternInput', 'dateInput'].forEach((id) => {
+      $(id).addEventListener('input', (e) => {
+        // keep mixed but normalize visually optional — leave as typed
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
