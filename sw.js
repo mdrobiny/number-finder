@@ -1,4 +1,4 @@
-const CACHE = 'numberfinder-v2';
+const CACHE = 'numberfinder-v3';
 const ASSETS = [
   './',
   './index.html',
