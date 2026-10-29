@@ -861,14 +861,23 @@
 
     // API caller
     async function checkOne(msisdn, brand, signal) {
-      const res = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ msisdn, brand, simCategory: 'PREPAID' }),
-        signal
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
+      let lastErr;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ msisdn, brand, simCategory: 'PREPAID' }),
+          signal
+        });
+        if (res.status === 429) {
+          await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+          lastErr = new Error('HTTP 429');
+          continue;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      }
+      throw lastErr || new Error('rate limited');
     }
 
     function addFound(msisdn, brand) {
@@ -918,8 +927,8 @@
       const prefixes = prefixesForOp(currentOp());
       const gen = candidates(cfg);
       const queue = [];
-      const CONCURRENCY = 3;
-      const DELAY_MS = 120;
+      const CONCURRENCY = 2;
+      const DELAY_MS = 280;
       let checked = 0;
       let stopped = false;
 
